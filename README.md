@@ -45,6 +45,6 @@ for line in text.lines() {
 }
 ```
 
-[`ReusingVec`]: https://docs.rs/reusing-vec/latest/reusing-vec/struct.ReusingVec.html
+[`ReusingVec`]: https://docs.rs/reusing-vec/latest/reusing_vec/struct.ReusingVec.html
 [`String`]: https://doc.rust-lang.org/std/string/struct.String.html
 [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
