@@ -1,0 +1,23 @@
+[package]
+name = "reusing-vec"
+version = "0.1.0"
+edition = "2021"
+authors = ["Luke Peterson <luke@infoplatter.com>"]
+license = "MIT OR Apache-2.0"
+description = "Wrapper over Vec that allows elements to be reused without dropping them"
+repository = "https://github.com/luketpeterson/reusing-vec/"
+readme = "README.md"
+keywords = ["vec", "reuse", "recycle", "drop"]
+categories = ["no-std", "algorithms", "data-structures", "rust-patterns"]
+
+[dependencies]
+smallvec = {version = "1.13.2", optional = true}
+
+[features]
+default = ["std", "smallvec"]
+std = []
+smallvec = ["dep:smallvec"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--generate-link-to-definition"]
