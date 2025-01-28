@@ -222,15 +222,18 @@ impl<T> PartialEq<ReusingVec<T>> for ReusingQueue<T> where T: PartialEq {
 }
 
 impl<T: ReusableElement> ReusingQueue<T> {
-    /// Appends an empty element to the back of a vector, increasing the logical length by 1
+    /// Appends an empty element to the back of a vector, increasing the logical length by 1, and returns
+    /// a mutable reference to the new / re-initialized element
     #[inline]
-    pub fn push_empty(&mut self) {
+    pub fn push_get_mut(&mut self) -> &mut T {
         if self.logical_end < self.contents.len() {
             self.contents.get_mut(self.logical_end).unwrap().reset();
         } else {
             self.contents.push(T::new());
         }
+        let element = self.contents.get_mut(self.logical_end).unwrap();
         self.logical_end += 1;
+        element
     }
 }
 
