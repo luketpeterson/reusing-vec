@@ -214,7 +214,7 @@ impl<T: ReusableElement> ReusingVec<T> {
     /// Appends an empty element to the back of a vector, increasing the logical length by 1, and returns
     /// a mutable reference to the new / re-initialized element
     #[inline]
-    pub fn push_get_mut(&mut self) -> &mut T {
+    pub fn push_mut(&mut self) -> &mut T {
         if self.logical_len < self.contents.len() {
             self.contents.get_mut(self.logical_len).unwrap().reset();
         } else {
