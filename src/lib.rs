@@ -233,6 +233,15 @@ pub trait ReusableElement {
     fn new() -> Self;
 }
 
+impl<T> ReusableElement for Option<T> {
+    fn reset(&mut self) {
+        *self = None
+    }
+    fn new() -> Self {
+        None
+    }
+}
+
 impl<T> ReusableElement for Vec<T> {
     fn reset(&mut self) {
         self.clear()
