@@ -4,6 +4,8 @@
 
 // Normal link to crate items:
 //! [`ReusingVec`]: ReusingVec
+//! [`ReusingQueue`]: ReusingQueue
+//! [`pop_front`]: ReusingQueue::pop_front
 
 #![doc = include_str!("../README.md")]
 
@@ -13,6 +15,9 @@ extern crate alloc;
 use alloc::vec::Vec;
 use alloc::string::String;
 use alloc::collections::*;
+
+mod queue;
+pub use queue::ReusingQueue;
 
 /// A wrapper around [`Vec`] that supports reusing contained elements without dropping them
 ///
@@ -55,7 +60,7 @@ impl<T> ReusingVec<T> {
     pub fn clear(&mut self) {
         self.logical_len = 0;
     }
-    /// Shortens the vector, keeping the first len elements and logically removing the rest
+    /// Shortens the vector, keeping the first `len` elements and logically removing the rest
     ///
     /// If `len` is greater or equal to the vector’s current logical length, this has no effect.
     #[inline]
@@ -88,6 +93,20 @@ impl<T> ReusingVec<T> {
             self.contents.push(new_f());
         }
         self.logical_len += 1;
+    }
+    /// Removes the last element from the vector
+    ///
+    /// Returns `true` if an element was removed, returns `false` if the vector was already empty
+    ///
+    /// Behavior is equivalent to `vec.truncate(vec.len()-1)`
+    #[inline]
+    pub fn pop(&mut self) -> bool {
+        if self.logical_len > 0 {
+            self.logical_len -= 1;
+            true
+        } else {
+            false
+        }
     }
 }
 
@@ -173,6 +192,25 @@ impl<T> IntoIterator for ReusingVec<T> {
 
 /// An [`Iterator`] created from a [`ReusingVec`]
 pub type ReusingVecIter<T> = core::iter::Take<alloc::vec::IntoIter<T>>;
+
+impl<T> PartialEq<Self> for ReusingVec<T> where T: PartialEq {
+    fn eq(&self, other: &Self) -> bool {
+        (self as &[T]).eq(other as &[T])
+    }
+}
+impl<T> Eq for ReusingVec<T> where T: Eq {}
+
+impl<T> PartialEq<[T]> for ReusingVec<T> where T: PartialEq {
+    fn eq(&self, other: &[T]) -> bool {
+        (self as &[T]).eq(other)
+    }
+}
+
+impl<T> PartialEq<Vec<T>> for ReusingVec<T> where T: PartialEq {
+    fn eq(&self, other: &Vec<T>) -> bool {
+        (self as &[T]).eq(other)
+    }
+}
 
 /// Implemented on element types to provide a unified interface for creating a new element and
 /// reinitializing an existing element

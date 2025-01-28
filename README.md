@@ -9,6 +9,8 @@ For example, pushing and popping from a `Vec<String>` in a loop would lead to al
 
 The interface is a more limited form of the `Vec` interface, without methods and implementations that allow for the re-acquisition of element ownership.
 
+Additionally there is the [`ReusingQueue`], for the same purpose, but when a [`pop_front`] method is needed.
+
 ## Usage
 ```rust
 use reusing_vec::ReusingVec;
@@ -46,5 +48,7 @@ for line in text.lines() {
 ```
 
 [`ReusingVec`]: https://docs.rs/reusing-vec/latest/reusing_vec/struct.ReusingVec.html
+[`ReusingQueue`]: https://docs.rs/reusing-vec/latest/reusing_vec/struct.ReusingQueue.html
+[`pop_front`]: https://docs.rs/reusing-vec/latest/reusing_vec/struct.ReusingQueue.html#method.pop_front
 [`String`]: https://doc.rust-lang.org/std/string/struct.String.html
 [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
