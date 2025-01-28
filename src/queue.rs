@@ -84,36 +84,36 @@ impl<T> ReusingQueue<T> {
     }
     /// Removes the last element from the vector
     ///
-    /// Returns `true` if an element was removed, returns `false` if the vector was already empty
-    ///
-    /// Behavior is equivalent to `vec.truncate(vec.len()-1)`
+    /// Returns a mutable reference to the element that was removed, or `None` if the vector was already empty
     #[inline]
-    pub fn pop(&mut self) -> bool {
+    pub fn pop(&mut self) -> Option<&mut T> {
         if self.logical_end > self.logical_start {
             self.logical_end -= 1;
+            let old_idx = self.logical_end;
             if self.logical_end == self.logical_start {
                 self.clear();
             }
-            true
+            self.contents.get_mut(old_idx)
         } else {
             self.clear();
-            false
+            None
         }
     }
     /// Removes the first element from the vector
     ///
-    /// Returns `true` if an element was removed, returns `false` if the vector was already empty
+    /// Returns a mutable reference to the element that was removed, or `None` if the vector was already empty
     #[inline]
-    pub fn pop_front(&mut self) -> bool {
+    pub fn pop_front(&mut self) -> Option<&mut T> {
         if self.logical_end > self.logical_start {
+            let old_idx = self.logical_start;
             self.logical_start += 1;
             if self.logical_end == self.logical_start {
                 self.clear();
             }
-            true
+            self.contents.get_mut(old_idx)
         } else {
             self.clear();
-            false
+            None
         }
     }
 }
@@ -221,8 +221,18 @@ impl<T> PartialEq<ReusingVec<T>> for ReusingQueue<T> where T: PartialEq {
     }
 }
 
-/// An [`Iterator`] created from a [`ReusingVec`]
-pub type ReusingVecIter<T> = core::iter::Take<alloc::vec::IntoIter<T>>;
+impl<T: ReusableElement> ReusingQueue<T> {
+    /// Appends an empty element to the back of a vector, increasing the logical length by 1
+    #[inline]
+    pub fn push_empty(&mut self) {
+        if self.logical_end < self.contents.len() {
+            self.contents.get_mut(self.logical_end).unwrap().reset();
+        } else {
+            self.contents.push(T::new());
+        }
+        self.logical_end += 1;
+    }
+}
 
 #[test]
 fn queue_test() {
@@ -233,10 +243,10 @@ fn queue_test() {
     queue.truncate(9);
     assert_eq!(queue.len(), 9);
     assert_eq!(*queue, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
-    assert_eq!(queue.pop(), true);
+    assert_eq!(queue.pop(), Some(&mut 8));
 
     queue.pop();
-    assert_eq!(queue.pop_front(), true);
+    assert_eq!(queue.pop_front(), Some(&mut 0));
     assert_eq!(queue.len(), 6);
     assert_eq!(*queue, [1, 2, 3, 4, 5, 6]);
 
@@ -250,9 +260,9 @@ fn queue_test() {
     let vec_2: Vec<i32> = queue.clone().into();
     assert_eq!(vec_1, vec_2);
 
-    while queue.pop() {
+    while queue.pop().is_some() {
         queue.pop_front();
     }
     assert_eq!(queue.len(), 0);
-    assert_eq!(queue.pop_front(), false);
+    assert_eq!(queue.pop_front(), None);
 }

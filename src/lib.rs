@@ -96,16 +96,14 @@ impl<T> ReusingVec<T> {
     }
     /// Removes the last element from the vector
     ///
-    /// Returns `true` if an element was removed, returns `false` if the vector was already empty
-    ///
-    /// Behavior is equivalent to `vec.truncate(vec.len()-1)`
+    /// Returns a mutable reference to the element that was removed, or `None` if the vector was already empty
     #[inline]
-    pub fn pop(&mut self) -> bool {
+    pub fn pop(&mut self) -> Option<&mut T> {
         if self.logical_len > 0 {
             self.logical_len -= 1;
-            true
+            self.contents.get_mut(self.logical_len)
         } else {
-            false
+            None
         }
     }
 }
@@ -212,6 +210,19 @@ impl<T> PartialEq<Vec<T>> for ReusingVec<T> where T: PartialEq {
     }
 }
 
+impl<T: ReusableElement> ReusingVec<T> {
+    /// Appends an empty element to the back of a vector, increasing the logical length by 1
+    #[inline]
+    pub fn push_empty(&mut self) {
+        if self.logical_len < self.contents.len() {
+            self.contents.get_mut(self.logical_len).unwrap().reset();
+        } else {
+            self.contents.push(T::new());
+        }
+        self.logical_len += 1;
+    }
+}
+
 /// Implemented on element types to provide a unified interface for creating a new element and
 /// reinitializing an existing element
 pub trait ReusableElement {
@@ -312,18 +323,5 @@ impl<A: smallvec::Array> ReusableElement for smallvec::SmallVec<A> {
     }
     fn new() -> Self {
         Self::new()
-    }
-}
-
-impl<T: ReusableElement> ReusingVec<T> {
-    /// Appends an empty element to the back of a vector, increasing the logical length by 1
-    #[inline]
-    pub fn push_empty(&mut self) {
-        if self.logical_len < self.contents.len() {
-            self.contents.get_mut(self.logical_len).unwrap().reset();
-        } else {
-            self.contents.push(T::new());
-        }
-        self.logical_len += 1;
     }
 }
