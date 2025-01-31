@@ -67,6 +67,20 @@ impl<T> ReusingQueue<T> {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+    /// Appends the provided element to the back of a vector, increasing the logical length by 1
+    ///
+    /// NOTE: This operation may cause an inactive `T` to be dropped, as it is overwritten by the
+    /// new element provided, so [`push_with`](Self::push_with) or [`push_mut`](Self::push_mut)
+    /// is the usual way to get the full benefit from this crate.
+    #[inline]
+    pub fn push_val(&mut self, val: T) {
+        if self.logical_end < self.contents.len() {
+            *self.contents.get_mut(self.logical_end).unwrap() = val;
+        } else {
+            self.contents.push(val);
+        }
+        self.logical_end += 1;
+    }
     /// Appends an element to the back of a vector, increasing the logical length by 1,
     /// creating or reinitializing the element with one of the supplied closures
     #[inline]
